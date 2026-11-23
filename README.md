@@ -31,7 +31,7 @@ server, plain html, css and javascript modules in the browser.
 
 ## run it
 
-needs [Node](https://nodejs.org) 20 or newer.
+needs [Node](https://nodejs.org) 22 or newer.
 
 ```sh
 git clone https://github.com/aposoloam/zero.git

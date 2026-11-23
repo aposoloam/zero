@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// server.js — zero's local server. No dependencies: just Node 20+.
+// server.js — zero's local server. No dependencies: just Node 22+.
 //
 //   node server.js            → http://localhost:4321
 //
