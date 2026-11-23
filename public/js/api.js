@@ -20,6 +20,8 @@ async function call(method, path, body) {
 
 /** Finds out whether the local server is there. Call once at startup. */
 export async function connect() {
+  // the server only ever listens on this machine, so anywhere else is the static demo
+  if (!['localhost', '127.0.0.1'].includes(location.hostname)) { info = null; return info; }
   try {
     const res = await fetch('api/health', { headers: HEADERS });
     info = res.ok ? await res.json() : null;
