@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#eceee9">
+  <title>zero</title>
+  <meta name="description" content="a local, private debt payoff planner. import statements, try strategies, see the month you hit $0.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta property="og:title" content="zero — a local, private debt payoff planner">
+  <meta property="og:description" content="import statements, try payoff strategies, and see the month you hit $0. runs on your own computer. open source.">
+  <meta property="og:image" content="https://aposoloam.github.io/zero/og.png">
+  <meta property="og:url" content="https://aposoloam.github.io/zero/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/zero.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%231c2433' stroke-width='4'/%3E%3Cpath d='M6 26 L26 6' stroke='%23b8362a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-repo="https://github.com/aposoloam/zero">
+  <a class="skip" href="#panes">skip to content</a>
+
+  <header class="bar top">
+    <span class="brand" aria-label="zero">zer<span class="slash">o</span></span>
+    <span class="where" id="where"></span>
+    <nav class="top-actions" aria-label="main">
+      <button type="button" data-cmd="palette">commands <kbd data-key="palette"></kbd></button>
+      <button type="button" data-cmd="import">import <kbd data-key="import"></kbd></button>
+      <button type="button" data-cmd="settings">settings <kbd data-key="settings"></kbd></button>
+    </nav>
+  </header>
+
+  <p class="banner" id="banner" hidden></p>
+
+  <main class="panes" id="panes">
+
+    <section class="pane" data-pane="payoff" aria-labelledby="h-payoff">
+      <header class="pane-head"><h2 id="h-payoff"><span class="idx"></span>payoff</h2></header>
+      <p class="lead" id="hero-lead">debt-free by</p>
+      <p class="hero" id="hero-date">—</p>
+      <dl class="facts" id="facts" aria-live="polite"></dl>
+      <figure class="chart-fig">
+        <p class="readout" id="readout" aria-hidden="true"></p>
+        <div class="payoff-chart" id="payoff-chart"></div>
+        <figcaption class="legend">
+          <span class="key key-plan">this plan</span>
+          <span class="key key-min" id="key-min">minimums only</span>
+          <span class="key key-promo" id="key-promo" hidden>promo rate ends</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="pane" data-pane="debts" aria-labelledby="h-debts">
+      <header class="pane-head">
+        <h2 id="h-debts"><span class="idx"></span>debts</h2>
+        <button type="button" class="quiet" data-cmd="add-debt">+ add a debt</button>
+      </header>
+      <div class="table-wrap">
+        <table class="debts">
+          <thead>
+            <tr>
+              <th scope="col">name</th>
+              <th scope="col" class="num">balance</th>
+              <th scope="col" class="num">rate %</th>
+              <th scope="col" class="num">promo %</th>
+              <th scope="col">promo ends</th>
+              <th scope="col" class="num">minimum</th>
+              <th scope="col" title="a card you clear every statement">paid in full</th>
+              <th scope="col">gone by</th>
+              <th scope="col"><span class="sr-only">actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="debt-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="pane" data-pane="plan" aria-labelledby="h-plan">
+      <header class="pane-head"><h2 id="h-plan"><span class="idx"></span>plan</h2></header>
+      <fieldset class="strategy">
+        <legend>extra money goes to</legend>
+        <label><input type="radio" name="strategy" value="avalanche"> highest rate first</label>
+        <label><input type="radio" name="strategy" value="snowball"> smallest balance first</label>
+        <label><input type="radio" name="strategy" value="custom"> my own order</label>
+        <p class="hint" id="strategy-hint"></p>
+      </fieldset>
+      <label class="switch">
+        <input type="checkbox" id="student-mode">
+        <span>student mode <kbd data-key="student"></kbd><small id="student-hint"></small></span>
+      </label>
+      <div class="slider">
+        <label for="extra-hours">extra shifts</label>
+        <output id="extra-hours-out" for="extra-hours"></output>
+        <input type="range" id="extra-hours" min="0" max="20" step="1">
+      </div>
+      <div class="slider">
+        <label for="extra-monthly">find more each month</label>
+        <output id="extra-monthly-out" for="extra-monthly"></output>
+        <input type="range" id="extra-monthly" min="0" max="1000" step="25">
+      </div>
+      <div class="lump">
+        <span id="lump-label">one-time payment</span>
+        <input type="number" id="lump-amount" min="0" step="10" inputmode="decimal" placeholder="0" aria-labelledby="lump-label">
+        <input type="month" id="lump-month" aria-label="month of the one-time payment">
+      </div>
+      <details class="numbers">
+        <summary>income and spending</summary>
+        <div class="numbers-grid">
+          <label>take-home a month <input type="number" data-money="takeHome" min="0" step="10" inputmode="decimal"></label>
+          <label>take-home an hour <input type="number" data-money="netHourly" min="0" step="0.05" inputmode="decimal"></label>
+          <label>fixed bills a month <input type="number" data-money="fixed" min="0" step="5" inputmode="decimal"></label>
+          <label>everyday spending <input type="number" data-money="living" min="0" step="5" inputmode="decimal"></label>
+          <label>student-mode spending <input type="number" data-money="studentLiving" min="0" step="5" inputmode="decimal"></label>
+        </div>
+      </details>
+      <p class="math" id="budget-math"></p>
+    </section>
+
+    <section class="pane" data-pane="notes" aria-labelledby="h-notes">
+      <header class="pane-head">
+        <h2 id="h-notes"><span class="idx"></span>notes</h2>
+        <button type="button" class="quiet" data-cmd="ask" id="ask-claude">ask claude <kbd data-key="ask"></kbd></button>
+      </header>
+      <ol class="note-list" id="local-notes"></ol>
+      <div class="claude-notes" id="claude-notes" aria-live="polite"></div>
+    </section>
+
+    <section class="pane" data-pane="flow" aria-labelledby="h-flow">
+      <header class="pane-head">
+        <h2 id="h-flow"><span class="idx"></span>money in / out</h2>
+        <label class="inline">window
+          <select id="window">
+            <option value="30">30 days</option>
+            <option value="90">90 days</option>
+            <option value="0">all</option>
+          </select>
+        </label>
+      </header>
+      <div class="flow-grid">
+        <figure>
+          <figcaption>by month</figcaption>
+          <div id="flow-chart" class="flow-chart"></div>
+          <p class="legend"><span class="key key-in">in</span><span class="key key-out">out</span></p>
+        </figure>
+        <figure>
+          <figcaption>where it went</figcaption>
+          <ol class="cats" id="cats"></ol>
+        </figure>
+      </div>
+    </section>
+
+    <section class="pane" data-pane="transactions" aria-labelledby="h-tx">
+      <header class="pane-head">
+        <h2 id="h-tx"><span class="idx"></span>transactions</h2>
+        <span class="hint" id="tx-count"></span>
+      </header>
+      <div class="filters">
+        <input type="search" id="tx-search" placeholder="search  /" aria-label="search transactions">
+        <select id="tx-account" aria-label="account"></select>
+        <select id="tx-category" aria-label="category"></select>
+      </div>
+      <div class="table-wrap">
+        <table class="txs">
+          <thead><tr><th scope="col">date</th><th scope="col">description</th><th scope="col">account</th><th scope="col">category</th><th scope="col" class="num">amount</th><th scope="col"><span class="sr-only">actions</span></th></tr></thead>
+          <tbody id="tx-rows"></tbody>
+        </table>
+      </div>
+      <button type="button" class="quiet more" id="tx-more" data-cmd="more-tx" hidden>show more</button>
+    </section>
+  </main>
+
+  <footer class="bar status" id="status" aria-label="status"></footer>
+
+  <!-- command palette -->
+  <dialog id="palette" class="palette" aria-label="commands">
+    <input type="text" placeholder="type a command" aria-label="command" role="combobox" aria-expanded="true" aria-controls="palette-list" autocomplete="off" spellcheck="false">
+    <ol id="palette-list" role="listbox"></ol>
+  </dialog>
+
+  <!-- import -->
+  <dialog id="import-dialog" aria-labelledby="import-h">
+    <form method="dialog" class="dialog-body">
+      <h2 id="import-h">import</h2>
+      <label class="drop" id="drop">
+        <input type="file" id="import-file" accept=".csv,text/csv,.json,application/json,.pdf,application/pdf,image/png,image/jpeg,image/webp">
+        <span>choose a file or drop it here</span>
+        <small>a csv from Capital One, Chase, Apple Card or most banks, a zero backup (.json), or a PDF statement or screenshot for claude to read</small>
+      </label>
+      <div id="import-preview"></div>
+      <p class="error" id="import-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="quiet">cancel</button>
+        <button type="button" id="import-confirm" data-cmd="confirm-import" disabled>add transactions</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- settings -->
+  <dialog id="settings-dialog" class="settings" aria-labelledby="settings-h">
+    <div class="dialog-body">
+      <header class="dialog-head">
+        <h2 id="settings-h">settings</h2>
+        <button type="button" class="quiet" data-cmd="close-settings">close <kbd>esc</kbd></button>
+      </header>
+      <div id="settings-body"></div>
+    </div>
+  </dialog>
+
+  <!-- shortcuts -->
+  <dialog id="help-dialog" aria-labelledby="help-h">
+    <form method="dialog" class="dialog-body">
+      <h2 id="help-h">keyboard</h2>
+      <dl class="shortcuts" id="shortcuts"></dl>
+      <div class="dialog-actions"><button value="ok" class="quiet">close</button></div>
+    </form>
+  </dialog>
+
+  <p class="toast" id="toast" role="status" aria-live="polite"></p>
+</body>
+</html>

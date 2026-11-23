@@ -1,0 +1,4 @@
+# your data, settings and api key live here — never commit them
+data/*
+!data/.gitkeep
+node_modules/

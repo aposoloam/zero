@@ -1,0 +1,13 @@
+{
+  "name": "zero",
+  "version": "2.0.0",
+  "description": "a local, private debt payoff planner",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "zero": "server.js" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.mjs"
+  }
+}
